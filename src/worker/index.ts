@@ -8,7 +8,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.use("/*", cors());
 
 // Simple password authentication
-const PASSWORD = "agencia123";
+const PASSWORD = "171217Aa";
 
 // Login endpoint
 app.post("/api/login", 
@@ -162,7 +162,7 @@ function parseNumber(str: string): number {
   if (!str) return 0;
   
   // Remove any non-numeric characters except comma and dot
-  let cleaned = str.replace(/[^\d.,\-]/g, '');
+  let cleaned = str.replace(/[^\d.,-]/g, '');
   
   // Handle Brazilian format (use comma as decimal separator)
   // If there's both comma and dot, assume dot is thousands separator
@@ -179,7 +179,24 @@ function parseNumber(str: string): number {
 }
 
 // Helper function to parse Google Sheets data
-async function fetchGoogleSheetsData(sheetsUrl: string): Promise<any[]> {
+interface GoogleSheetsRow {
+  date: string;
+  investment: number;
+  clicks: number;
+  page_views: number;
+  leads: number;
+  conversations: number;
+  meetings: number;
+  checkouts: number;
+  sales: number;
+  revenue: number;
+  average_ticket: number;
+  profile_clicks: number;
+  followers: number;
+  messages: number;
+}
+
+async function fetchGoogleSheetsData(sheetsUrl: string): Promise<GoogleSheetsRow[]> {
   try {
     // Extract spreadsheet ID from URL
     const match = sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
@@ -229,9 +246,9 @@ async function fetchGoogleSheetsData(sheetsUrl: string): Promise<any[]> {
       
       // Map columns based on expected format
       // Expected: Data, Investimento, Cliques, [Visualizações], Leads, Conversas, [Reuniões], [Checkouts], Vendas, Receita, [Ticket Médio], [Perfil Cliques], [Seguidores], [Mensagens]
-      let dateStr = values[0];
-      let investmentStr = values[1];
-      let clicksStr = values[2];
+      const dateStr = values[0];
+      const investmentStr = values[1];
+      const clicksStr = values[2];
       let leadsStr, conversationsStr, salesStr, revenueStr;
       let pageViewsStr = '0', meetingsStr = '0', checkoutsStr = '0';
       let ticketMedioStr = '0', perfilCliquesStr = '0', seguidoresStr = '0', mensagensStr = '0';
