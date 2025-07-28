@@ -9,9 +9,11 @@ export default defineConfig({
     allowedHosts: true,
   },
   build: {
-    chunkSizeWarningLimit: 5000,
-    outDir: "dist",      
-    emptyOutDir: true,     
+    outDir: "dist",        // garante saída em dist
+    emptyOutDir: true,
+    rollupOptions: {
+      input: "./index.html", // força o HTML raiz
+    },
   },
   resolve: {
     alias: {
