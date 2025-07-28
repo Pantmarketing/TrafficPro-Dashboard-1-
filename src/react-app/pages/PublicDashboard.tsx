@@ -68,7 +68,7 @@ export default function PublicDashboard() {
       } else {
         setError('Senha incorreta. Tente novamente.');
       }
-    } catch (error) {
+    } catch {
       setError('Erro ao verificar senha. Tente novamente.');
     } finally {
       setIsAuthenticating(false);

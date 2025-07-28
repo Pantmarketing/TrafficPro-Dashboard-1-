@@ -23,12 +23,24 @@ export default function TimelineChart({ data }: TimelineChartProps) {
     }).format(value);
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface CustomTooltipEntry {
+    color: string;
+    name: string;
+    value: number;
+  }
+
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: CustomTooltipEntry[];
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 border border-slate-200 rounded-xl shadow-lg">
           <p className="font-medium text-slate-800 mb-2">{`Data: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: CustomTooltipEntry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {entry.name === 'Vendas' ? entry.value : formatCurrency(entry.value)}
             </p>
