@@ -10,6 +10,8 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 5000,
+    outDir: "dist",      
+    emptyOutDir: true,     
   },
   resolve: {
     alias: {
