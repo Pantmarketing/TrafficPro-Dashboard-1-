@@ -10,6 +10,18 @@ app.use("/*", cors());
 // Simple password authentication
 const PASSWORD = "171217Aa";
 
+// Ensure dashboard_access table exists
+app.use(async (c, next) => {
+  await c.env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS dashboard_access (
+      user_id INTEGER NOT NULL,
+      dashboard_id INTEGER NOT NULL,
+      UNIQUE(user_id, dashboard_id)
+    )`
+  ).run();
+  await next();
+});
+
 // Login endpoint
 app.post("/api/login", 
   zValidator("json", z.object({ password: z.string() })),
@@ -79,19 +91,32 @@ app.get("/api/dashboards", async (c) => {
 // Get dashboard by ID
 app.get("/api/dashboards/:id", async (c) => {
   const id = c.req.param("id");
-  
+
+  const userId = c.req.header("x-user-id");
+  if (!userId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const access = await c.env.DB.prepare(
+    "SELECT 1 FROM dashboard_access WHERE user_id = ? AND dashboard_id = ?"
+  ).bind(userId, id).first();
+
+  if (!access) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
+
   const dashboard = await c.env.DB.prepare(
     "SELECT * FROM dashboards WHERE id = ?"
   ).bind(id).first();
-  
+
   if (!dashboard) {
     return c.json({ error: "Dashboard not found" }, 404);
   }
-  
+
   const { results: data } = await c.env.DB.prepare(
     "SELECT * FROM dashboard_data WHERE dashboard_id = ? ORDER BY date ASC"
   ).bind(id).all();
-  
+
   return c.json({ ...dashboard, data });
 });
 
@@ -354,17 +379,17 @@ app.put("/api/dashboards/:id/sheets-url",
 );
 
 // Public dashboard authentication
-app.post("/api/dashboards/:id/public-auth",
+app.post(
+  "/api/dashboards/:id/public-auth",
   zValidator("json", z.object({ password: z.string() })),
   async (c) => {
     const { password } = c.req.valid("json");
-    
-    // Simple password for public dashboard access
-    // In production, each dashboard could have its own password
-    if (password === "cliente123") {
+
+    // Use the same admin password for public access
+    if (password === PASSWORD) {
       return c.json({ success: true });
     }
-    
+
     return c.json({ error: "Invalid password" }, 401);
   }
 );

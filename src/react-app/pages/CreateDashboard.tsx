@@ -15,10 +15,12 @@ export default function CreateDashboard() {
     setIsLoading(true);
 
     try {
+      const userId = localStorage.getItem('user_id') || '1';
       const response = await fetch('/api/dashboards', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-User-Id': userId
         },
         body: JSON.stringify({
           name,

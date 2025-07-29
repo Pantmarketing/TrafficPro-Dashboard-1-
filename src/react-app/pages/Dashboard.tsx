@@ -26,7 +26,10 @@ export default function Dashboard() {
 
   const fetchDashboard = async () => {
     try {
-      const response = await fetch(`/api/dashboards/${id}`);
+      const userId = localStorage.getItem('user_id') || '1';
+      const response = await fetch(`/api/dashboards/${id}`, {
+        headers: { 'X-User-Id': userId }
+      });
       const dashboardData = await response.json();
       setDashboard(dashboardData);
       setData(dashboardData.data || []);
@@ -40,8 +43,10 @@ export default function Dashboard() {
   const handleImportData = async () => {
     setIsImporting(true);
     try {
+      const userId = localStorage.getItem('user_id') || '1';
       const response = await fetch(`/api/dashboards/${id}/import-sheets`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'X-User-Id': userId }
       });
       
       if (response.ok) {
@@ -56,10 +61,12 @@ export default function Dashboard() {
 
   const handleUpdateSheetsUrl = async () => {
     try {
+      const userId = localStorage.getItem('user_id') || '1';
       const response = await fetch(`/api/dashboards/${id}/sheets-url`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-User-Id': userId
         },
         body: JSON.stringify({ sheets_url: newSheetsUrl })
       });
@@ -162,7 +169,7 @@ export default function Dashboard() {
                 onClick={() => {
                   const publicUrl = `${window.location.origin}/public/dashboard/${id}`;
                   navigator.clipboard.writeText(publicUrl);
-                  alert('Link copiado! Compartilhe com seu cliente.\nSenha: cliente123');
+                  alert('Link copiado! Compartilhe com seu cliente.');
                 }}
                 className="flex items-center px-4 py-2 text-green-600 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
               >

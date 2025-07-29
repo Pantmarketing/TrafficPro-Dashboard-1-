@@ -33,6 +33,7 @@ export function useAuth() {
       
       if (data.success) {
         localStorage.setItem('auth_token', 'authenticated');
+        localStorage.setItem('user_id', '1');
         setAuthState({
           isAuthenticated: true,
           isLoading: false
@@ -48,6 +49,7 @@ export function useAuth() {
 
   const logout = () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_id');
     setAuthState({
       isAuthenticated: false,
       isLoading: false

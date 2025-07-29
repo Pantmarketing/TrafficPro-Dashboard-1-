@@ -33,7 +33,10 @@ export default function PublicDashboard() {
 
   const fetchDashboard = async () => {
     try {
-      const response = await fetch(`/api/dashboards/${id}`);
+      const userId = localStorage.getItem('user_id') || '1';
+      const response = await fetch(`/api/dashboards/${id}`, {
+        headers: { 'X-User-Id': userId }
+      });
       const dashboardData = await response.json();
       setDashboard(dashboardData);
       setData(dashboardData.data || []);
@@ -63,6 +66,7 @@ export default function PublicDashboard() {
       if (result.success) {
         const authKey = `public_dashboard_auth_${id}`;
         localStorage.setItem(authKey, 'true');
+        localStorage.setItem('user_id', '1');
         setIsAuthenticated(true);
         await fetchDashboard();
       } else {

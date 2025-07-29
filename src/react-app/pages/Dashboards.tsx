@@ -17,7 +17,10 @@ export default function Dashboards() {
 
   const fetchDashboards = async () => {
     try {
-      const response = await fetch('/api/dashboards');
+      const userId = localStorage.getItem('user_id') || '1';
+      const response = await fetch('/api/dashboards', {
+        headers: { 'X-User-Id': userId }
+      });
       const data = await response.json();
       setDashboards(data);
     } catch (error) {
