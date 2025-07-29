@@ -2,25 +2,89 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { cors } from "hono/cors";
+import { jwt, sign } from "hono/jwt";
+import bcrypt from "bcryptjs";
 
 const app = new Hono<{ Bindings: Env }>();
 
 app.use("/*", cors());
 
-// Simple password authentication
-const PASSWORD = "171217Aa";
+const JWT_SECRET = "supersecret";
 
-// Login endpoint
-app.post("/api/login", 
-  zValidator("json", z.object({ password: z.string() })),
+// Login endpoint using hashed passwords
+app.post(
+  "/api/login",
+  zValidator(
+    "json",
+    z.object({
+      username: z.string(),
+      password: z.string(),
+    })
+  ),
   async (c) => {
-    const { password } = c.req.valid("json");
-    
-    if (password === PASSWORD) {
-      return c.json({ success: true });
+    const { username, password } = c.req.valid("json");
+    const user = await c.env.DB.prepare(
+      "SELECT * FROM users WHERE username = ?"
+    )
+      .bind(username)
+      .first();
+
+    if (!user) {
+      return c.json({ error: "Invalid credentials" }, 401);
     }
-    
-    return c.json({ error: "Invalid password" }, 401);
+
+    const ok = await bcrypt.compare(password, user.password_hash as string);
+    if (!ok) return c.json({ error: "Invalid credentials" }, 401);
+
+    const token = await sign(
+      { id: user.id, role: user.role },
+      JWT_SECRET
+    );
+    return c.json({ token });
+  }
+);
+
+const auth = jwt({ secret: JWT_SECRET });
+
+// Endpoint to create users (master only)
+app.post(
+  "/api/users",
+  auth,
+  zValidator(
+    "json",
+    z.object({
+      username: z.string(),
+      password: z.string(),
+      dashboards: z.array(z.number()).optional(),
+    })
+  ),
+  async (c) => {
+    const session = c.get("jwtPayload") as { id: number; role: string };
+    if (session.role !== "master") {
+      return c.json({ error: "Forbidden" }, 403);
+    }
+
+    const { username, password, dashboards } = c.req.valid("json");
+    const hash = await bcrypt.hash(password, 10);
+
+    const result = await c.env.DB.prepare(
+      "INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'cliente')"
+    )
+      .bind(username, hash)
+      .run();
+    const userId = result.meta.last_row_id;
+
+    if (dashboards) {
+      for (const dashId of dashboards) {
+        await c.env.DB.prepare(
+          "INSERT OR IGNORE INTO user_dashboards (user_id, dashboard_id) VALUES (?, ?)"
+        )
+          .bind(userId, dashId)
+          .run();
+      }
+    }
+
+    return c.json({ id: userId, username });
   }
 );
 

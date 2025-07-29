@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/react-app/hooks/useAuth';
 import { Lock } from 'lucide-react';
+import { User } from 'lucide-react';
 
 export default function Login() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +17,7 @@ export default function Login() {
     setError('');
     setIsLoading(true);
 
-    const success = await login(password);
+    const success = await login(username, password);
     
     if (success) {
       navigate('/dashboards');
@@ -38,6 +40,24 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-slate-700 mb-2">
+              Usuário
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+                placeholder="Usuário"
+                required
+              />
+            </div>
+          </div>
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
               Senha de Acesso
