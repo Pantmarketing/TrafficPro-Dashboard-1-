@@ -1,0 +1,3 @@
+name = "dash-metricas"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-07-28"
