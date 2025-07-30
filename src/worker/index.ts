@@ -223,23 +223,30 @@ function parseCSVLine(line: string): string[] {
 
 // Helper function to parse Brazilian number format
 function parseNumber(str: string): number {
-  if (!str) return 0;
+  if (!str || str.trim() === '') return 0;
   
-  // Remove any non-numeric characters except comma and dot
+  console.log(`Parsing number: "${str}"`);
+  
+  // Remove any non-numeric characters except comma, dot, and minus
   let cleaned = str.replace(/[^\d.,-]/g, '');
+  console.log(`Cleaned: "${cleaned}"`);
   
   // Handle Brazilian format (use comma as decimal separator)
   // If there's both comma and dot, assume dot is thousands separator
   if (cleaned.includes(',') && cleaned.includes('.')) {
     // Format like 1.234,56 -> remove dots, replace comma with dot
     cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+    console.log(`After handling both separators: "${cleaned}"`);
   } else if (cleaned.includes(',')) {
     // Format like 1234,56 -> replace comma with dot
     cleaned = cleaned.replace(',', '.');
+    console.log(`After handling comma: "${cleaned}"`);
   }
   
   const parsed = parseFloat(cleaned);
-  return isNaN(parsed) ? 0 : parsed;
+  const result = isNaN(parsed) ? 0 : parsed;
+  console.log(`Final result: ${result}`);
+  return result;
 }
 
 // Helper function to parse Google Sheets data
@@ -262,6 +269,8 @@ interface GoogleSheetsRow {
 
 async function fetchGoogleSheetsData(sheetsUrl: string): Promise<GoogleSheetsRow[]> {
   try {
+    console.log('Starting Google Sheets data fetch...');
+    
     // Extract spreadsheet ID from URL
     const match = sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     if (!match) {
@@ -269,11 +278,15 @@ async function fetchGoogleSheetsData(sheetsUrl: string): Promise<GoogleSheetsRow
     }
     
     const spreadsheetId = match[1];
+    console.log('Extracted spreadsheet ID:', spreadsheetId);
     
     // Use the public CSV export endpoint
     const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=0`;
+    console.log('Fetching CSV from:', csvUrl);
     
     const response = await fetch(csvUrl);
+    console.log('Response status:', response.status, response.statusText);
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.status} - ${response.statusText}`);
     }
@@ -283,6 +296,7 @@ async function fetchGoogleSheetsData(sheetsUrl: string): Promise<GoogleSheetsRow
     console.log('First 500 chars:', csvText.substring(0, 500));
     
     const lines = csvText.split('\n').filter(line => line.trim());
+    console.log('Total lines after filtering:', lines.length);
     
     if (lines.length < 2) {
       throw new Error('Sheet appears to be empty or has no data rows');
@@ -437,6 +451,8 @@ app.post("/api/dashboards/:id/public-auth",
 app.post("/api/dashboards/:id/import-sheets", async (c) => {
   const id = c.req.param("id");
   
+  console.log(`Starting import for dashboard ${id}`);
+  
   try {
     // Get dashboard to check if it has a sheets URL
     const dashboard = await c.env.DB.prepare(
@@ -444,6 +460,7 @@ app.post("/api/dashboards/:id/import-sheets", async (c) => {
     ).bind(id).first();
     
     if (!dashboard) {
+      console.log(`Dashboard ${id} not found`);
       return c.json({ error: "Dashboard not found" }, 404);
     }
     
@@ -452,6 +469,7 @@ app.post("/api/dashboards/:id/import-sheets", async (c) => {
     // If no URL configured, use the default one provided by the customer
     if (!sheetsUrl) {
       sheetsUrl = "https://docs.google.com/spreadsheets/d/14P8cdVGmCdx-rxbYtcc9IGmw7WPruxUQuijIgGDHb-0";
+      console.log(`No sheets URL configured, using default: ${sheetsUrl}`);
     }
     
     console.log(`Importing data from: ${sheetsUrl}`);
@@ -460,6 +478,7 @@ app.post("/api/dashboards/:id/import-sheets", async (c) => {
     const sheetData = await fetchGoogleSheetsData(sheetsUrl);
     
     if (sheetData.length === 0) {
+      console.log('No data found in spreadsheet');
       return c.json({ 
         error: "No data found in the spreadsheet", 
         details: "Verifique se a planilha tem dados e está pública ou configurada para 'Anyone with the link can view'"
@@ -469,12 +488,17 @@ app.post("/api/dashboards/:id/import-sheets", async (c) => {
     console.log(`Importing ${sheetData.length} rows to dashboard ${id}`);
     
     // Clear existing data
+    console.log('Clearing existing data...');
     await c.env.DB.prepare(
       "DELETE FROM dashboard_data WHERE dashboard_id = ?"
     ).bind(id).run();
     
     // Insert new data
-    for (const data of sheetData) {
+    console.log('Inserting new data...');
+    for (let i = 0; i < sheetData.length; i++) {
+      const data = sheetData[i];
+      console.log(`Inserting row ${i + 1}/${sheetData.length}: ${data.date}`);
+      
       await c.env.DB.prepare(
         `INSERT INTO dashboard_data 
          (dashboard_id, date, investment, clicks, leads, conversations, sales, revenue, page_views, checkouts, meetings, average_ticket, profile_clicks, followers, messages)
@@ -489,6 +513,7 @@ app.post("/api/dashboards/:id/import-sheets", async (c) => {
     
     console.log(`Successfully imported ${sheetData.length} rows`);
     return c.json({ 
+      ok: true,
       success: true, 
       imported: sheetData.length,
       message: `Importados ${sheetData.length} registros com sucesso`
