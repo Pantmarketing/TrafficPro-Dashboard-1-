@@ -12,7 +12,15 @@ export default defineConfig({
     outDir: "dist",        // garante saída em dist
     emptyOutDir: true,
     rollupOptions: {
-      input: "./index.html", // força o HTML raiz
+      input: {
+        main: "./index.html",
+        worker: "./src/worker/index.ts"
+      },
+      output: {
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'worker' ? 'worker.js' : 'assets/[name]-[hash].js';
+        }
+      }
     },
   },
   resolve: {

@@ -5,9 +5,10 @@
     "types": ["@cloudflare/workers-types", "./worker-configuration.d.ts"],
     "lib": ["ES2023", "WebWorker"],
     "baseUrl": ".",
+    "outDir": "./dist",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/worker"]
+  "include": ["src/worker/**/*"]
 }
