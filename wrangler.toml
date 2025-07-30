@@ -1,3 +1,9 @@
 name = "dash-metricas"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-07-28"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pant-marketing-dashboard"
+database_id = "019842c3-7849-74eb-811b-bc065849b9d2"

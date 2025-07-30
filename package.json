@@ -37,7 +37,8 @@
     "wrangler": "^4.25.0"
   },
   "scripts": {
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run fix-wrangler",
+    "fix-wrangler": "node -e \"const fs=require('fs');const config=JSON.parse(fs.readFileSync('dist/wrangler.json','utf8'));config.configPath='./wrangler.toml';config.userConfigPath='./wrangler.toml';fs.writeFileSync('dist/wrangler.json',JSON.stringify(config));\"",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
     "dev": "vite",
