@@ -37,8 +37,9 @@
     "wrangler": "^4.25.0"
   },
   "scripts": {
-    "build": "tsc -b && vite build && npm run fix-wrangler",
-    "fix-wrangler": "node -e \"const fs=require('fs');const config={name:'dash-metricas',compatibility_date:'2025-07-28',compatibility_flags:['nodejs_compat'],main:'./worker.js',d1_databases:[{binding:'DB',database_name:'pant-marketing-dashboard',database_id:'019842c3-7849-74eb-811b-bc065849b9d2'}]};fs.writeFileSync('dist/wrangler.json',JSON.stringify(config,null,2));\"",
+    "build": "tsc -b && vite build && npm run copy-wrangler && npm run fix-wrangler-json",
+    "copy-wrangler": "cp wrangler.toml dist/ && echo 'Copied wrangler.toml to dist/'",
+    "fix-wrangler-json": "node -e \"const fs=require('fs');const config={name:'dash-metricas',compatibility_date:'2025-07-28',compatibility_flags:['nodejs_compat'],main:'./worker.js',d1_databases:[{binding:'DB',database_name:'pant-marketing-dashboard',database_id:'019842c3-7849-74eb-811b-bc065849b9d2'}]};fs.writeFileSync('dist/wrangler.json',JSON.stringify(config,null,2));console.log('Generated clean wrangler.json');\"",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
     "dev": "vite",
