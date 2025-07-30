@@ -38,7 +38,7 @@
   },
   "scripts": {
     "build": "tsc -b && vite build && mkdir -p dist && cp wrangler.toml dist/ && npm run create-wrangler-json",
-    "create-wrangler-json": "node -e \"const fs=require('fs');const config={name:'dash-metricas',compatibility_date:'2025-07-28',compatibility_flags:['nodejs_compat'],main:'./worker.js',d1_databases:[{binding:'DB',database_name:'pant-marketing-dashboard',database_id:'019842c3-7849-74eb-811b-bc065849b9d2'}]};fs.writeFileSync('dist/wrangler.json',JSON.stringify(config,null,2));console.log('✅ Created dist/wrangler.json');\"",
+    "create-wrangler-json": "node -e \"const fs=require('fs');const config={name:'dash-metricas',compatibility_date:'2025-07-28',compatibility_flags:['nodejs_compat'],main:'./worker.js',d1_databases:[{binding:'DB',database_name:'trafficpro-db',database_id:'ff8c0c41-a808-4f68-aa1a-505f5c8a4d58'}]};fs.writeFileSync('dist/wrangler.json',JSON.stringify(config,null,2));console.log('✅ Created dist/wrangler.json');\"",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
     "dev": "vite",

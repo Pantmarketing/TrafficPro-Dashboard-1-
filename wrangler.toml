@@ -5,5 +5,5 @@ compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "pant-marketing-dashboard"
-database_id = "019842c3-7849-74eb-811b-bc065849b9d2"
+database_name = "trafficpro-db"
+database_id = "ff8c0c41-a808-4f68-aa1a-505f5c8a4d58"

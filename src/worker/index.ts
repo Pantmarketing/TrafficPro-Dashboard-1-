@@ -544,4 +544,38 @@ app.post("/api/dashboards/:id/import-sheets", async (c) => {
   }
 });
 
+// Test endpoint to verify D1 database connection
+app.get("/api/test-db", async (c) => {
+  try {
+    console.log("Testing D1 database connection...");
+    
+    // Test basic query
+    const result = await c.env.DB.prepare("SELECT 1 as test").first();
+    console.log("Basic query result:", result);
+    
+    // Test if tables exist
+    const tables = await c.env.DB.prepare(`
+      SELECT name FROM sqlite_master 
+      WHERE type='table' AND name IN ('users', 'dashboards', 'dashboard_data')
+    `).all();
+    
+    console.log("Available tables:", tables);
+    
+    return c.json({
+      success: true,
+      message: "D1 database connection working",
+      test_result: result,
+      tables: tables.results?.map(t => t.name) || []
+    });
+    
+  } catch (error) {
+    console.error("Database test error:", error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "D1 database connection failed"
+    }, 500);
+  }
+});
+
 export default app;
