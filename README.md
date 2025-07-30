@@ -24,3 +24,13 @@ npm run dev
 npm run build
 npm run check
 ```
+
+### Cloudflare Pages
+
+Ao configurar o projeto no Cloudflare Pages, use estas opções:
+
+- **Build command:** `npm run build`
+- **Build output directory:** `dist`
+
+O arquivo `wrangler.toml` já define `pages_build_output_dir = "dist"`, por isso não é
+necessário apontar para `dist/client`.
